@@ -5,11 +5,13 @@ int main() {
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
-    int burst_time[n], remaining_time[n], waiting_time[n], turnaround_time[n];
-    printf("Enter the burst time for each process:\n");
+    int burst_time[n], remaining_time[n], waiting_time[n], turnaround_time[n], priority[n];
+    printf("Enter the burst time and priority for each process:\n");
     for (i = 0; i < n; i++) {
-        printf("Process %d: ", i + 1);
+        printf("Process %d - Burst Time: ", i + 1);
         scanf("%d", &burst_time[i]);
+        printf("Process %d - Priority: ", i + 1);
+        scanf("%d", &priority[i]);
         remaining_time[i] = burst_time[i];
     }
 
@@ -18,18 +20,29 @@ int main() {
 
     int complete = 0, current_time = 0;
     while (complete != n) {
+        int highest_priority = __INT_MAX__;
+        int index = -1;
+
         for (i = 0; i < n; i++) {
-            if (remaining_time[i] > 0) {
-                if (remaining_time[i] > quantum) {
-                    current_time += quantum;
-                    remaining_time[i] -= quantum;
-                } else {
-                    current_time += remaining_time[i];
-                    waiting_time[i] = current_time - burst_time[i];
-                    remaining_time[i] = 0;
-                    complete++;
-                }
+            if (remaining_time[i] > 0 && priority[i] < highest_priority) {
+                highest_priority = priority[i];
+                index = i;
             }
+        }
+
+        if (index == -1) {
+            current_time++;
+            continue;
+        }
+
+        if (remaining_time[index] > quantum) {
+            current_time += quantum;
+            remaining_time[index] -= quantum;
+        } else {
+            current_time += remaining_time[index];
+            waiting_time[index] = current_time - burst_time[index];
+            remaining_time[index] = 0;
+            complete++;
         }
     }
 
@@ -37,9 +50,9 @@ int main() {
         turnaround_time[i] = burst_time[i] + waiting_time[i];
     }
 
-    printf("\nProcess\tBurst Time\tWaiting Time\tTurnaround Time\n");
+    printf("\nProcess\tBurst Time\tPriority\tWaiting Time\tTurnaround Time\n");
     for (i = 0; i < n; i++) {
-        printf("%d\t%d\t\t%d\t\t%d\n", i + 1, burst_time[i], waiting_time[i], turnaround_time[i]);
+        printf("%d\t%d\t\t%d\t\t%d\t\t%d\n", i + 1, burst_time[i], priority[i], waiting_time[i], turnaround_time[i]);
     }
 
     float avg_waiting_time = 0, avg_turnaround_time = 0;
